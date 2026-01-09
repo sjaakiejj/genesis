@@ -6,7 +6,8 @@
 
 namespace Genesis::Generator {
 
-void RiverGenerator::Generate(Data::World &world, const Config &config) {
+void RiverGenerator::Generate(Data::World &world, const Config &config,
+                              const TerrainGenerator::Config &terrainConfig) {
   if (!world.terrain)
     return;
   auto terrain = world.terrain.get();
@@ -43,26 +44,9 @@ void RiverGenerator::Generate(Data::World &world, const Config &config) {
     }
   }
 
-  // After generating data, we need to update the mesh visuals.
-  // Since we didn't change heights (yet), we can just update colors?
-  // But TerrainGenerator::Generate is the only way to rebuild currently.
-  // Let's grab the LAST terrain config? Or just assume we can rebuild with
-  // current data? TerrainGenerator::Generate FROM config REBUILDS the heightmap
-  // from noise, wiping our rivers! This is a problem.
-
-  // SOLUTION: We need a "RegenerateMesh(Terrain*)" function in TerrainGenerator
-  // that uses existing heightmap and rivermap data, without re-sampling noise.
-  // For now, I'll cheat and just Re-run TerrainGenerator logic purely for mesh
-  // building locally here OR refactor TerrainGenerator.
-
-  // Let's refactor TerrainGenerator slightly later.
-  // For now, I will create a temporary config that matches the terrain
-  // dimensions BUT wait, TerrainGenerator::Generate overrides heightmap.
-
-  // FIX: I will add a static helper in RiverGenerator (or better, in
-  // TerrainGenerator) to UpdateMesh(Terrain* terrain, float seaLevel). I need
-  // seaLevel. It's not stored in Terrain. I will assume seaLevel 0.2f for now
-  // or pass it in Config.
+  // After generating data, we update the mesh visuals using the provided
+  // terrain config
+  TerrainGenerator::RebuildMesh(terrain, terrainConfig);
 }
 
 void RiverGenerator::TraceRiver(Data::Terrain *terrain, int startX,

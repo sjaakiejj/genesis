@@ -69,6 +69,31 @@ void TerrainGenerator::Generate(Data::World &world, const Config &config) {
     terrain->heightMap[i] = pixels[i].r / 255.0f;
   }
 
+  UnloadImageColors(pixels);
+  UnloadImage(noiseImage);
+
+  // Rebuild mesh with new heightmap
+  RebuildMesh(terrain.get(), config);
+}
+
+void TerrainGenerator::RebuildMesh(Data::Terrain *terrain,
+                                   const Config &config) {
+  if (terrain->heightMap.empty())
+    return;
+
+  if (terrain->isModelLoaded) {
+    UnloadModel(terrain->model);
+  }
+
+  Mesh mesh = {0};
+  mesh.triangleCount = (config.width - 1) * (config.depth - 1) * 2;
+  mesh.vertexCount = mesh.triangleCount * 3;
+
+  mesh.vertices = (float *)MemAlloc(mesh.vertexCount * 3 * sizeof(float));
+  mesh.normals = (float *)MemAlloc(mesh.vertexCount * 3 * sizeof(float));
+  mesh.colors =
+      (unsigned char *)MemAlloc(mesh.vertexCount * 4 * sizeof(unsigned char));
+
   // Build Mesh
   int vCounter = 0;
   for (int z = 0; z < config.depth - 1; z++) {
@@ -81,14 +106,11 @@ void TerrainGenerator::Generate(Data::World &world, const Config &config) {
       float h11 = terrain->GetHeight(x + 1, z + 1);
 
       // Calculate Normals for each vertex (Smooth Shading)
-      Vector3 n00 =
-          GetVertexNormal(terrain.get(), x, z, config.heightMultiplier);
-      Vector3 n10 =
-          GetVertexNormal(terrain.get(), x + 1, z, config.heightMultiplier);
-      Vector3 n01 =
-          GetVertexNormal(terrain.get(), x, z + 1, config.heightMultiplier);
+      Vector3 n00 = GetVertexNormal(terrain, x, z, config.heightMultiplier);
+      Vector3 n10 = GetVertexNormal(terrain, x + 1, z, config.heightMultiplier);
+      Vector3 n01 = GetVertexNormal(terrain, x, z + 1, config.heightMultiplier);
       Vector3 n11 =
-          GetVertexNormal(terrain.get(), x + 1, z + 1, config.heightMultiplier);
+          GetVertexNormal(terrain, x + 1, z + 1, config.heightMultiplier);
 
       // Triangle 1 (Bottom Left, Top Left, Bottom Right) -> CCW
       // BL (x, z)
@@ -199,8 +221,5 @@ void TerrainGenerator::Generate(Data::World &world, const Config &config) {
   // Default material uses VERTEX_COLOR
   terrain->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].color = WHITE;
   terrain->isModelLoaded = true;
-
-  UnloadImageColors(pixels);
-  UnloadImage(noiseImage);
 }
 } // namespace Genesis::Generator
