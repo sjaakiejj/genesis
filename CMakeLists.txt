@@ -12,7 +12,7 @@ add_subdirectory(external/raylib)
 
 # 2. Creating ImGui Library
 # Include all core ImGui source files
-file(GLOB IMGUI_SOURCES 
+file(GLOB IMGUI_SOURCES
     "external/imgui/imgui.cpp"
     "external/imgui/imgui_draw.cpp"
     "external/imgui/imgui_tables.cpp"

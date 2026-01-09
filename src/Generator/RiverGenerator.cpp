@@ -16,6 +16,8 @@ void RiverGenerator::Generate(Data::World &world, const Config &config,
   if (!terrain->baseHeightMap.empty() &&
       terrain->baseHeightMap.size() == terrain->heightMap.size()) {
     terrain->heightMap = terrain->baseHeightMap;
+    // Invalidate erosion snapshot since we reverted to base
+    terrain->preErosionHeightMap.clear();
   }
 
   // Always reset river map before generation

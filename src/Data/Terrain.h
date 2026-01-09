@@ -12,7 +12,8 @@ struct Terrain {
 
   // The raw height data (0.0f - 1.0f)
   std::vector<float> heightMap;
-  std::vector<float> baseHeightMap; // Original heightmap for resetting
+  std::vector<float> baseHeightMap;       // Original heightmap for resetting
+  std::vector<float> preErosionHeightMap; // Snapshot before erosion
   // 0 = No River, 1 = River Source, 2 = River Body
   std::vector<int> riverMap;
 

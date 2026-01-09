@@ -16,7 +16,8 @@ namespace Genesis::UI {
 
 enum class WizardStep {
   Macro_Terrain,
-  Rivers_Water, // New Step
+  Rivers_Water,
+  Macro_Erosion, // New step
   Infrastructure_Roads,
   Zoning_Districts,
   Parcels_Subdivision,

@@ -1,6 +1,7 @@
 #include "Wizard.h"
 #include "../Data/Project.h"
 #include "../Data/World.h"
+#include "../Generator/ErosionGenerator.h"
 #include "../Generator/RiverGenerator.h"
 #include "../Generator/TerrainGenerator.h"
 #include <filesystem>
@@ -20,12 +21,13 @@ namespace Genesis::UI {
 const std::map<WizardStep, std::string> StepNames = {
     {WizardStep::Macro_Terrain, "1. Macro: Terrain"},
     {WizardStep::Rivers_Water, "2. Macro: Rivers"},
-    {WizardStep::Infrastructure_Roads, "3. Infrastructure: Roads"},
-    {WizardStep::Zoning_Districts, "4. Zoning: Districts"},
-    {WizardStep::Parcels_Subdivision, "5. Parcels: Subdivision"},
-    {WizardStep::Buildings_Structure, "6. Buildings: Structure"},
-    {WizardStep::Interiors_Furnishing, "7. Interiors: Furnishing"},
-    {WizardStep::Export, "8. Export"}};
+    {WizardStep::Macro_Erosion, "3. Macro: Erosion"},
+    {WizardStep::Infrastructure_Roads, "4. Infrastructure: Roads"},
+    {WizardStep::Zoning_Districts, "5. Zoning: Districts"},
+    {WizardStep::Parcels_Subdivision, "6. Parcels: Subdivision"},
+    {WizardStep::Buildings_Structure, "7. Buildings: Structure"},
+    {WizardStep::Interiors_Furnishing, "8. Interiors: Furnishing"},
+    {WizardStep::Export, "9. Export"}};
 
 Wizard::Wizard() {}
 
@@ -271,15 +273,26 @@ void Wizard::DrawCurrentStepFor(std::shared_ptr<Genesis::Data::World> world,
     if (ImGui::Button("Generate Rivers", ImVec2(280, 30))) {
       Genesis::Generator::RiverGenerator::Generate(*world, riverConfig,
                                                    currentTerrainConfig);
+    }
 
-      // History? Rivers are part of terrain state now if stored in riverMap.
-      // But riverMap is checked by TerrainGenerator ONLY IF it exists.
-      // Yes, we should probably record this. But Snapshots only save Configs
-      // currently... NOT the actual map data. This is a flaw in my Project Save
-      // system. The current Project System only saves CONFIGs, not DATA. So if
-      // I restart, the rivers are gone unless I re-run the generator with the
-      // SAME seed. BUT RiverGenerator uses random placement! So I need a seed
-      // for RiverGenerator too.
+    break;
+  }
+  case WizardStep::Macro_Erosion: {
+    ImGui::Text("Hydraulic Erosion");
+    ImGui::TextWrapped("Simulate rain to erode cliffs and smooth valleys.");
+
+    static Generator::ErosionGenerator::Config erosionConfig;
+    ImGui::InputInt("Iterations", &erosionConfig.iterations);
+    ImGui::SliderFloat("Erosion", &erosionConfig.erosionRate, 0.0f, 1.0f);
+    ImGui::SliderFloat("Deposit", &erosionConfig.depositionRate, 0.0f, 1.0f);
+    ImGui::SliderFloat("Gravity", &erosionConfig.gravity, 1.0f, 20.0f);
+    ImGui::SliderFloat("Inertia", &erosionConfig.inertia, 0.0f, 1.0f);
+    ImGui::SliderFloat("Evap", &erosionConfig.evaporationRate, 0.001f, 0.2f);
+    ImGui::SliderFloat("Min Slope", &erosionConfig.minSlope, 0.0f, 0.1f);
+
+    if (ImGui::Button("Simulate Erosion", ImVec2(280, 30))) {
+      Genesis::Generator::ErosionGenerator::Execute(*world, erosionConfig,
+                                                    currentTerrainConfig);
     }
     break;
   }
