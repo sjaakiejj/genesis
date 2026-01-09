@@ -12,6 +12,7 @@ struct Terrain {
 
   // The raw height data (0.0f - 1.0f)
   std::vector<float> heightMap;
+  std::vector<float> baseHeightMap; // Original heightmap for resetting
   // 0 = No River, 1 = River Source, 2 = River Body
   std::vector<int> riverMap;
 
@@ -31,6 +32,12 @@ struct Terrain {
     if (x < 0 || x >= width || z < 0 || z >= depth || riverMap.empty())
       return 0;
     return riverMap[z * width + x];
+  }
+
+  void SetHeight(int x, int z, float h) {
+    if (x < 0 || x >= width || z < 0 || z >= depth)
+      return;
+    heightMap[z * width + x] = h;
   }
 
   // Destructor to clean up GPU resources

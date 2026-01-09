@@ -46,10 +46,6 @@ void TerrainGenerator::Generate(Data::World &world, const Config &config) {
   // Resize and clear river map
   terrain->riverMap.assign(config.width * config.depth, 0);
 
-  if (terrain->isModelLoaded) {
-    UnloadModel(terrain->model);
-  }
-
   Mesh mesh = {0};
   mesh.triangleCount = (config.width - 1) * (config.depth - 1) * 2;
   mesh.vertexCount = mesh.triangleCount * 3;
@@ -65,8 +61,11 @@ void TerrainGenerator::Generate(Data::World &world, const Config &config) {
   Color *pixels = LoadImageColors(noiseImage);
 
   // Fill Heightmap
+  terrain->baseHeightMap.resize(config.width * config.depth);
   for (int i = 0; i < config.width * config.depth; i++) {
-    terrain->heightMap[i] = pixels[i].r / 255.0f;
+    float h = pixels[i].r / 255.0f;
+    terrain->heightMap[i] = h;
+    terrain->baseHeightMap[i] = h;
   }
 
   UnloadImageColors(pixels);

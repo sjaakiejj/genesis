@@ -18,7 +18,8 @@ public:
                        const TerrainGenerator::Config &terrainConfig);
 
 private:
-  static void TraceRiver(Data::Terrain *terrain, int startX, int startZ);
+  static bool TraceRiver(Data::Terrain *terrain, int startX, int startZ,
+                         float seaLevel, int minLength);
 };
 
 } // namespace Genesis::Generator
